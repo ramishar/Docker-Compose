@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+
+  database:
+    image: postgres
+    container_name: database
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    
+  adminer:
+    image: adminer
+    container_name: adminer
+    depends_on:
+      - database
+    restart: always
+    networks:
+      - backend
+    ports:
+      - "8091:8080"
+    
+  api:
+    build:
+      context: ./api
+    container_name: api
+    depends_on:
+      - database
+    networks:
+      - backend
+      - frontend
+    volumes:
+      - ./api:/app
+  
+  web-app:
+    build:
+      context: ./web-app
+    container_name: web-app
+    depends_on:
+      - database
+      - api
+    networks:
+      - frontend
+    ports:
+      - "8090:5000"
+    volumes:
+      - ./web-app:/app
+
+networks:
+  frontend:
+  backend:
+
+
+volumes:
+  db_data:
